@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La literatura en tu mente</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <video autoplay muted loop id="video-background">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-underwater-view-of-a-whale-swimming-41565-large.mp4"
+            type="video/mp4">
+        Tu navegador no soporta videos en HTML5.
+    </video>
+    <div class="overlay"></div>
+
+    <div class="login-container" id="login-container">
+        <div class="login-card">
+            <!-- PASO 1: LOGIN -->
+            <div id="login-step">
+                <div class="banner-purple">Iniciar Sesión</div>
+                <div class="login-body">
+                    <form onsubmit="handleLogin(event)">
+                        <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                        <input type="password" id="login-password" placeholder="Contraseña" required>
+                        <button type="submit" class="login-btn btn-primary">Iniciar Sesión</button>
+                    </form>
+                    <p class="auth-toggle">¿No tienes cuenta? <a href="#" onclick="switchToRegister(event)">Regístrate
+                            aquí</a></p>
+                </div>
+            </div>
+
+            <!-- PASO 2: REGISTRO -->
+            <div id="register-step" style="display: none;">
+                <div class="banner-purple">Crear Cuenta</div>
+                <div class="login-body">
+                    <form onsubmit="handleRegister(event)">
+                        <input type="text" id="register-name" placeholder="Nombre completo" required>
+                        <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                        <input type="password" id="register-password" placeholder="Contraseña" required>
+                        <input type="password" id="register-confirm-password" placeholder="Confirmar contraseña"
+                            required>
+                        <button type="submit" class="login-btn btn-primary">Crear Cuenta</button>
+                    </form>
+                    <p class="auth-toggle">¿Ya tienes cuenta? <a href="#" onclick="switchToLogin(event)">Inicia
+                            sesión</a></p>
+                </div>
+            </div>
+
+            <!-- PASO 3: SELECCIÓN DE ROL -->
+            <div class="role-selection" id="role-step" style="display: none;">
+                <div class="banner-purple">Seleccionar Rol</div>
+                <h3>¿Cuál es tu rol en la plataforma?</h3>
+                <div class="role-options">
+                    <button class="role-btn" onclick="setRole('docente')"><i class="fa-solid fa-graduation-cap"></i>
+                        Docente</button>
+                    <button class="role-btn" onclick="setRole('estudiante')"><i class="fa-solid fa-user-graduate"></i>
+                        Estudiante</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-page" id="main-page">
+        <header>
+            <div class="header-left">
+                <i class="fa-solid fa-bars menu-icon" title="Menú"></i>
+                <h1>La literatura en tu mente</h1>
+            </div>
+            <div class="header-right">
+                <span class="nav-link" onclick="openModal('modal-ayuda')"><i class="fa-solid fa-circle-question"></i>
+                    Ayuda</span>
+
+                <span class="nav-link student-view" onclick="openModal('modal-clase')"><i class="fa-solid fa-plus"></i>
+                    Unirse a una clase</span>
+                <span class="nav-link teacher-view" onclick="openModal('modal-crear-clase')"><i
+                        class="fa-solid fa-folder-plus"></i> Crear Clase</span>
+
+                <span class="nav-link" onclick="openModal('modal-perfil')" id="user-display-name">
+                    <i class="fa-solid fa-user-circle"></i> Usuario
+                </span>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+
+            <div class="col-left">
+
+                <div class="section-card student-view">
+                    <h2><i class="fa-solid fa-book"></i> Mis Tareas</h2>
+                    <p>Aquí se muestran todas tus tareas entregadas.</p>
+                    <div id="mis-tareas-entregadas" style="max-height: 250px; overflow-y: auto;">
+                        <p style="color: #999; text-align: center; margin: 20px 0;">No tienes tareas entregadas aún.</p>
+                    </div>
+                </div>
+
+
+
+                <div class="section-card student-view">
+                    <h2><i class="fa-solid fa-clock"></i> Pendientes</h2>
+                    <div id="lista-pendientes" style="max-height: 250px; overflow-y: auto;">
+                        <p style="color: #999; text-align: center; margin: 20px 0;">No tienes tareas pendientes.</p>
+                    </div>
+                </div>
+
+                <div class="section-card student-view">
+                    <h2><i class="fa-solid fa-chalkboard-user"></i> Mis Clases</h2>
+                    <p>Estas son las clases a las que estás inscrito. Pulsa una clase para ver su contenido y entregar
+                        una actividad.</p>
+                    <div id="student-class-list" style="max-height: 320px; overflow-y: auto;">
+                        <p style="color: #999; text-align: center; margin: 20px 0;">No estás inscrito en ninguna clase.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="section-card student-view">
+                    <h2><i class="fa-solid fa-id-card"></i> Mi Matrícula</h2>
+                    <p>Esta matrícula te permite que el docente te agregue directamente a una clase.</p>
+                    <p><strong id="student-matricula-display">Genera tu matrícula en el botón de arriba.</strong></p>
+                </div>
+
+                <div class="section-card teacher-view">
+                    <h2><i class="fa-solid fa-chalkboard-user"></i> Mis Clases</h2>
+                    <p>Tienes <strong id="clase-count">0</strong> clases creadas actualmente.</p>
+                    <div id="lista-clases" style="max-height: 250px; overflow-y: auto;">
+                        <!-- Las clases se cargarán aquí dinámicamente -->
+                    </div>
+                    <button class="role-btn" style="padding: 6px 12px; font-size: 14px; margin-top: 10px;"
+                        onclick="openModal('modal-crear-clase')">+ Nueva Clase</button>
+                </div>
+
+                <div class="section-card teacher-view">
+                    <h2><i class="fa-solid fa-users"></i> Avances de los Alumnos</h2>
+                    <label for="avances-clase-select" style="font-weight: bold; font-size: 13px;">Selecciona una clase:</label>
+                    <select id="avances-clase-select" onchange="actualizarAvancesAlumnos()" style="margin-bottom: 15px;">
+                        <option value="">-- Seleccionar clase --</option>
+                    </select>
+                    <div id="avances-alumnos-container" style="max-height: 280px; overflow-y: auto;">
+                        <p style="color: #999; text-align: center; margin: 10px 0;">Selecciona una clase para visualizar los alumnos.</p>
+                    </div>
+                </div>
+
+                <div class="section-card teacher-view">
+                    <h2><i class="fa-solid fa-bell"></i> Trabajos por Calificar (Pendientes)</h2>
+                    <div id="grading-list" style="max-height: 280px; overflow-y: auto; padding-right: 5px;">
+                        <p style="color: #999; text-align: center; margin: 20px 0;">No hay trabajos pendientes por
+                            calificar.</p>
+                    </div>
+                </div>
+
+                <!-- El buzón de pensamiento ha sido retirado -->
+
+            </div>
+
+            <div class="col-right">
+
+                <div class="section-card">
+                    <h2><i class="fa-solid fa-book-open"></i> Libros de la SEP</h2>
+                    <div id="libros-list" class="resource-grid">
+                        <p style="color: #999; text-align: center; margin: 20px 0; width: 100%;">No hay libros cargados aún.</p>
+                    </div>
+
+                    <div class="teacher-view upload-box">
+                        <small><strong>Módulo Docente:</strong> Agregar nuevo libro de la SEP</small>
+                        <input type="text" id="libro-titulo" placeholder="Título del libro" style="margin-top: 5px;">
+                        <input type="text" id="libro-link" placeholder="Enlace (URL) del libro" style="margin-top: 5px;">
+                        <input type="text" id="libro-imagen-url" placeholder="URL de la imagen de portada" style="margin-top: 5px;">
+                        <div style="margin-top: 8px;">
+                            <label style="font-size: 11px; color: #666; display: block; text-align: left;">O subir archivo de portada (opcional):</label>
+                            <input type="file" id="libro-imagen-file" accept="image/*" style="margin-top: 2px; font-size: 12px; width: 100%;">
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <label style="font-size: 11px; color: #666; display: block; text-align: left;">O subir libro/documento PDF (opcional):</label>
+                            <input type="file" id="libro-archivo" accept=".pdf, .txt" style="margin-top: 2px; font-size: 12px; width: 100%;">
+                        </div>
+                        <button class="role-btn btn-primary" style="margin-top: 12px; padding: 8px 16px; font-size: 13px;" onclick="agregarMaterial('libro')">Agregar Libro</button>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2><i class="fa-solid fa-folder-open"></i> Material Didáctico</h2>
+                    <div id="material-list" class="resource-grid">
+                        <p style="color: #999; text-align: center; margin: 20px 0; width: 100%;">No hay material didáctico cargado aún.</p>
+                    </div>
+
+                    <div class="teacher-view upload-box">
+                        <small><strong>Módulo Docente:</strong> Agregar nuevo material didáctico</small>
+                        <input type="text" id="material-titulo" placeholder="Título del material" style="margin-top: 5px;">
+                        <input type="text" id="material-link" placeholder="Enlace (URL) del material" style="margin-top: 5px;">
+                        <input type="text" id="material-imagen-url" placeholder="URL de la imagen de portada" style="margin-top: 5px;">
+                        <div style="margin-top: 8px;">
+                            <label style="font-size: 11px; color: #666; display: block; text-align: left;">O subir archivo de portada (opcional):</label>
+                            <input type="file" id="material-imagen-file" accept="image/*" style="margin-top: 2px; font-size: 12px; width: 100%;">
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <label style="font-size: 11px; color: #666; display: block; text-align: left;">O subir documento PDF (opcional):</label>
+                            <input type="file" id="material-archivo" accept=".pdf, .txt" style="margin-top: 2px; font-size: 12px; width: 100%;">
+                        </div>
+                        <button class="role-btn btn-primary" style="margin-top: 12px; padding: 8px 16px; font-size: 13px;" onclick="agregarMaterial('material')">Agregar Material</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-ayuda">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-ayuda')">&times;</span>
+            <h2 style="color: var(--primary-purple); margin-bottom: 15px;">Guía de Uso de la Página</h2>
+            <div style="line-height: 1.6;">
+                <p>1. <strong>Navegación:</strong> Usa el banner superior para cambiar los datos de tu cuenta o realizar
+                    acciones rápidas.</p>
+                <p>2. <strong>Sección Izquierda:</strong> Encontrarás tus herramientas operativas cotidianas según tu
+                    rol.</p>
+                <p>3. <strong>Sección Derecha:</strong> Contiene las referencias bibliográficas oficiales y materiales
+                    complementarios.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-clase">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-modal" onclick="closeModal('modal-clase')">&times;</span>
+            <h2 style="color: var(--primary-purple)">Unirse a una Clase</h2>
+            <p style="margin-top: 10px;">Introduce el código alfanumérico proporcionado por tu docente.</p>
+            <input type="text" id="join-class-code" placeholder="Ejemplo: L1T-40X"
+                style="text-align: center; font-size: 18px; text-transform: uppercase;">
+            <button class="role-btn" style="margin-top: 15px; width: 100%;" onclick="unirseClase()">Ingresar a la
+                Clase</button>
+            <p id="join-class-feedback" style="margin-top: 12px; color: #555;"></p>
+            <hr style="border-color: #ddd; margin: 20px 0;">
+            <p>Tu matrícula:</p>
+            <strong id="mi-matricula" style="font-size: 18px; letter-spacing: 0.08em;">-</strong>
+            <button class="role-btn btn-secondary" style="margin-top: 15px; width: 100%; background: #555;"
+                onclick="mostrarMatricula()">Mostrar / generar matrícula</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-crear-clase">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-crear-clase')">&times;</span>
+            <h2 style="color: var(--primary-purple)">Crear Nueva Clase / Contenido</h2>
+            <label>Título del tema:</label>
+            <input type="text" id="clase-titulo" placeholder="Ej: Vanguardismo en Latinoamérica">
+
+            <label style="display:block; margin-top:10px;">Escribir contenido temático:</label>
+            <textarea id="clase-contenido" rows="4"
+                placeholder="Escribe el texto de la clase directamente aquí..."></textarea>
+
+            <label style="display:block; margin-top:10px;">O adjuntar archivos soportados:</label>
+            <input type="file" id="clase-archivo" accept=".pdf, .txt, image/*">
+
+            <div style="display:flex; gap: 10px; margin-top: 20px;">
+                <button class="role-btn" style="background:#555" onclick="guardarClase('borrador')">Editar
+                    después</button>
+                <button class="role-btn" onclick="guardarClase('publicada')">Publicar Clase</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-perfil">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-perfil')">&times;</span>
+            <h2 style="color: var(--primary-purple)">Personalizar Perfil</h2>
+            <center style="margin: 15px 0;">
+                <div class="profile-avatar-placeholder">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <input type="file" accept="image/*" style="font-size: 12px; width: auto; border:none;">
+            </center>
+
+            <label>Cambiar Nombre:</label>
+            <input type="text" id="input-username" value="Usuario de Muestra">
+
+            <label style="display:block; margin-top:10px;">Matrícula:</label>
+            <input type="text" id="profile-matricula" value="-" readonly style="background: #f7f7f7;">
+
+            <label style="display:block; margin-top:10px;">Cambiar Correo Electrónico:</label>
+            <input type="email" value="correo@cuenta.com">
+
+            <label style="display:block; margin-top:10px;">Breve Descripción:</label>
+            <textarea rows="2" placeholder="Cuéntanos un poco sobre ti..."></textarea>
+
+            <button class="role-btn" style="margin-top: 20px; width: 100%;" onclick="saveProfile()">Guardar
+                Cambios</button>
+            <button class="role-btn" style="margin-top: 10px; width: 100%; background-color: #d32f2f;"
+                onclick="logoutUser()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-calificar">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-calificar')">&times;</span>
+            <h2>Evaluar Actividad</h2>
+            <p id="calificar-info" style="margin: 10px 0;"></p>
+            <div id="submission-content"
+                style="background: #f7f7f7; padding: 12px; border-radius: 8px; text-align: left; max-height: 220px; overflow-y: auto; margin-bottom: 15px; color: #333;">
+            </div>
+            <div id="submission-file-container" style="margin-bottom: 15px; display: none; text-align: left;">
+                <strong>Archivo adjunto:</strong>
+                <button id="btn-open-submission-file" class="role-btn"
+                    style="padding: 5px 10px; font-size: 13px; background: #4CAF50; color: white; margin-left: 10px;">Abrir
+                    archivo</button>
+            </div>
+            <label>Asignar Calificación (Estrellas 1-5):</label>
+            <select id="calificacion-stars">
+                <option value="5">⭐⭐⭐⭐⭐ (Excelente)</option>
+                <option value="4">⭐⭐⭐⭐ (Muy Bueno)</option>
+                <option value="3">⭐⭐⭐ (Regular)</option>
+                <option value="2">⭐⭐ (Insuficiente)</option>
+                <option value="1">⭐ (Deficiente)</option>
+            </select>
+            <button class="role-btn" style="margin-top:15px; width:100%;" onclick="guardarCalificacion()">Guardar
+                Nota</button>
+        </div>
+    </div>
+
+    <!-- MODAL: ENTREGAR ACTIVIDAD (Estudiante) -->
+    <div class="modal" id="modal-entregar-actividad">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-entregar-actividad')">&times;</span>
+            <h2 style="color: var(--primary-purple); margin-bottom: 10px;">Entregar Actividad</h2>
+            <p style="font-size: 14px; margin-bottom: 5px;">Clase: <strong id="entrega-clase-titulo">-</strong></p>
+            <p style="font-size: 14px; margin-bottom: 15px;">Actividad: <strong id="entrega-actividad-titulo">-</strong>
+            </p>
+            <p id="entrega-actividad-desc"
+                style="font-size: 13px; color: #555; background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 3px solid var(--primary-purple); text-align: left; white-space: pre-wrap;">
+            </p>
+
+            <label style="display:block; text-align:left; font-weight:bold; margin-top:10px;">Escribe tu respuesta o
+                resumen:</label>
+            <textarea id="entrega-contenido" rows="5" placeholder="Escribe aquí tu entrega..."></textarea>
+
+            <label style="display:block; text-align:left; font-weight:bold; margin-top:10px;">Adjuntar archivo soportado
+                (PDF, txt, imagen):</label>
+            <input type="file" id="entrega-archivo" accept=".pdf, .txt, image/*" style="margin-top: 5px;">
+
+            <button class="role-btn" style="margin-top: 20px; width: 100%;" onclick="guardarEntregaActividad()">Enviar
+                Entrega</button>
+        </div>
+    </div>
+
+    <!-- MODAL: AGREGAR ACTIVIDAD (Docente) -->
+    <div class="modal" id="modal-agregar-actividad">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-modal" onclick="closeModal('modal-agregar-actividad')">&times;</span>
+            <h2 style="color: var(--primary-purple); margin-bottom: 5px;">Actividades de la Clase</h2>
+            <p style="font-size: 14px; margin-bottom: 15px;">Clase: <strong
+                    id="actividades-clase-titulo-display">-</strong></p>
+
+            <h3
+                style="font-size: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; text-align: left;">
+                Actividades Asignadas</h3>
+            <div id="actividades-clase-list"
+                style="max-height: 150px; overflow-y: auto; text-align: left; margin-bottom: 15px; padding-right: 5px;">
+                <p style="color: #999; text-align: center; margin: 10px 0;">No hay actividades creadas en esta clase.
+                </p>
+            </div>
+
+            <h3
+                style="font-size: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; text-align: left;">
+                Crear Nueva Actividad</h3>
+            <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; text-align: left;">
+                <label style="display:block; font-weight:bold; font-size: 13px;">Título de la actividad:</label>
+                <input type="text" id="actividad-titulo" placeholder="Ej: Reporte de lectura de Don Quijote"
+                    style="margin-top: 5px; margin-bottom: 10px;">
+
+                <label style="display:block; font-weight:bold; font-size: 13px; margin-top:10px;">Instrucciones /
+                    Descripción:</label>
+                <textarea id="actividad-descripcion" rows="3" placeholder="Escribe las instrucciones detalladas aquí..."
+                    style="margin-top: 5px; margin-bottom: 10px;"></textarea>
+
+                <label style="display:block; font-weight:bold; font-size: 13px; margin-top:10px;">Fecha límite de
+                    entrega:</label>
+                <input type="date" id="actividad-fecha-limite" style="margin-top: 5px; margin-bottom: 15px;">
+
+                <button class="role-btn" style="width: 100%;" onclick="guardarNuevaActividad()">Crear Actividad</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: GESTIONAR ALUMNOS DE LA CLASE (Docente) -->
+    <div class="modal" id="modal-alumnos-clase">
+        <div class="modal-content" style="max-width: 550px;">
+            <span class="close-modal" onclick="closeModal('modal-alumnos-clase')">&times;</span>
+            <h2 style="color: var(--primary-purple); margin-bottom: 5px;">Alumnos Inscritos</h2>
+            <p style="font-size: 14px; margin-bottom: 15px;">Clase: <strong id="roster-clase-titulo">-</strong> (Código:
+                <strong id="roster-clase-code">-</strong>)</p>
+
+            <h3
+                style="font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; text-align: left;">
+                Lista de Alumnos</h3>
+            <div id="roster-alumnos-list"
+                style="max-height: 180px; overflow-y: auto; text-align: left; margin-bottom: 15px;">
+                <p style="color: #999; text-align: center; margin: 10px 0;">No hay alumnos inscritos.</p>
+            </div>
+
+            <h3
+                style="font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; text-align: left;">
+                Inscribir Nuevo Alumno</h3>
+            <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; text-align: left;">
+                <div style="margin-bottom: 12px;">
+                    <label style="font-weight:bold; font-size: 13px;">Seleccionar de los registrados en la
+                        plataforma:</label>
+                    <select id="select-alumno-plataforma" style="margin-top: 5px; font-size: 14px;">
+                        <option value="">-- Seleccionar estudiante --</option>
+                    </select>
+                    <button class="role-btn"
+                        style="margin-top: 8px; width: 100%; padding: 6px 12px; font-size: 13px; background: #2196F3; color: white;"
+                        onclick="agregarAlumnoDesdeSelect()">Inscribir Seleccionado</button>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DETALLE DE ACTIVIDADES Y AVANCES DEL ALUMNO (Docente) -->
+    <div class="modal" id="modal-avances-detalle">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-modal" onclick="closeModal('modal-avances-detalle')">&times;</span>
+            <h2 style="color: var(--primary-purple); margin-bottom: 5px;"><i class="fa-solid fa-graduation-cap"></i> Detalle de Actividades</h2>
+            <p style="font-size: 14px; margin-bottom: 15px; text-align: left;">
+                Alumno: <strong id="detalle-alumno-nombre">-</strong><br>
+                Matrícula: <strong id="detalle-alumno-matricula">-</strong>
+            </p>
+            
+            <div id="detalle-alumno-actividades" style="max-height: 320px; overflow-y: auto; text-align: left; margin-bottom: 15px; padding-right: 5px;">
+                <!-- Se poblará dinámicamente con las actividades y calificaciones -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
